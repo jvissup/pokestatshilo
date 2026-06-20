@@ -53,7 +53,7 @@ The image download mode is useful if you want Vercel to serve static images from
 - Late rounds: exact stat comparisons with tighter deltas.
 - Timer: 25 seconds per round by default.
 - Correct answers reveal stats briefly, then auto-advance to the next round.
-- Popout/fullscreen mode: use Popout Game to open a kiosk-style full-screen-sized window. Start Fullscreen Game and Enter Fullscreen request true browser fullscreen from a user click.
+- Popout/fullscreen mode: use Popout Game to open a kiosk-style full-screen-sized window. Start Game runs in normal browser mode, and Enter Fullscreen can be used when kiosk mode is desired.
 - ETB tier: 22-win streak, intentionally hardest to reach.
 
 Edit `src/lib/game/config.ts` to change the 25-second timer, auto-advance delay, stat-difference bands, prize thresholds, or prize costs.
