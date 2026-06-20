@@ -1,6 +1,6 @@
 # Pokemon Base Stat Prize Ladder
 
-A Vercel-ready Next.js starter for a timed Pokemon base-stat higher/lower game with fullscreen/popout play, automatic next-round flow, encrypted run tokens, server-side run storage, CSV-backed Pokemon stats, and a physical prize ladder.
+A Vercel-ready Next.js starter for a timed Pokemon base-stat higher/lower game with fullscreen/popout play, automatic next-round flow, stateless encrypted run tokens, CSV-backed Pokemon stats, and a physical prize ladder.
 
 ## Current economics
 
@@ -77,23 +77,14 @@ Each run stores a `seenPokemonIds` ledger. When a question is generated, both Po
 
 Other anti-cheat changes:
 
-- Current questions are stored server-side instead of being recomputed from a visible seed.
-- Run tokens are encrypted, not just signed.
-- Tokens include a run-state version, so stale/replayed tokens are rejected.
+- Current questions are stored inside the encrypted run token instead of being recomputed from a visible seed.
+- Run tokens are encrypted and authenticated with `GAME_SECRET`; the browser cannot read or modify the hidden run ledger.
 - Unrevealed Pokemon stat values and hidden stat deltas are not sent to the browser before the answer.
 - Answer checking still happens server-side.
 
-For local development, run state falls back to an in-memory map. For Vercel production, configure Redis/KV-style REST environment variables so run state survives serverless instance changes and stale tokens can be rejected consistently.
+This ZIP intentionally has **no production KV/Upstash dependency**. The complete hidden run state is carried in an encrypted AES-GCM token, so Vercel only needs `GAME_SECRET` and `CLAIM_SECRET`.
 
-Supported production env var names:
-
-```bash
-KV_REST_API_URL=
-KV_REST_API_TOKEN=
-# or
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
-```
+Tradeoff: without server-side storage, a determined technical attacker could attempt token rollback by replaying an older encrypted token they previously received. The normal game flow still prevents duplicate Pokemon within a run, keeps unrevealed stats hidden, and verifies every answer server-side. For high-stakes paid events, Redis/KV or another durable ledger is still the stronger anti-replay option, but it is not required by this build.
 
 ## Image handling
 
@@ -146,14 +137,13 @@ openssl rand -hex 32
 1. Push this folder to GitHub.
 2. Import the repo into Vercel.
 3. Add `GAME_SECRET` and `CLAIM_SECRET` environment variables.
-4. Add Redis/KV REST environment variables for production run storage.
-5. Deploy with the default Next.js settings.
+4. Deploy with the default Next.js settings.
 
 ## Production checklist before taking paid entries
 
-This starter now has server-side run storage, encrypted run tokens, one-version-only request tokens, and per-run no-repeat Pokemon logic. Before live paid use, still add/confirm:
+This starter now has stateless encrypted run tokens and per-run no-repeat Pokemon logic. Before live paid use, still add/confirm:
 
-- Durable production Redis/KV or database storage.
+- Optional durable Redis/KV or database storage if you need stronger anti-replay protection for high-stakes prize operation.
 - Staff admin screen for claim verification and redemption.
 - Payment verification or POS entry-code redemption.
 - Inventory caps and event configuration, especially for the Prismatic ETB.

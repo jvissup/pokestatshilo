@@ -1,6 +1,6 @@
 {
   "name": "pokemon-prize-ladder",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Vercel-ready Pokemon base-stat higher/lower prize ladder game.",
   "scripts": {

@@ -40,9 +40,8 @@ Review notes:
 - The ZIP goes further than PR #2:
   - removes deterministic seed-based generation for live gameplay;
   - uses Node crypto randomness for server-side question choice;
-  - stores current questions server-side;
-  - encrypts run access tokens;
-  - rejects stale/replayed run tokens using a version number;
+  - stores current questions inside encrypted run tokens;
+  - encrypts and authenticates full run state;
   - tracks `seenPokemonIds`; and
   - filters all future question candidates so no Pokemon can appear twice in the same run.
 
@@ -51,7 +50,7 @@ Review notes:
 - Source of truth changed to `data/csv/pokestats-workbook.csv`.
 - Generated `src/lib/game/data.ts` now contains 1,025 Pokemon from the uploaded workbook CSV.
 - `src/lib/game/questions.ts` now uses crypto-random selection and no-repeat filtering.
-- `src/lib/game/store.ts` adds server-side run storage with Redis/KV REST support and local memory fallback.
-- `src/lib/game/signing.ts` now uses encrypted run tokens for game access.
-- API routes now load/update stored run state instead of trusting a visible signed state blob.
+- `src/lib/game/store.ts` now uses stateless encrypted run tokens with no required Redis/KV environment variables.
+- `src/lib/game/signing.ts` now uses encrypted run tokens for hidden game state.
+- API routes now load/update encrypted run state instead of trusting a visible signed state blob.
 

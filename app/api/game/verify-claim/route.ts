@@ -8,7 +8,10 @@ export async function POST(request: Request) {
   if (!body.claimCode) return NextResponse.json({ error: 'claimCode is required.' }, { status: 400 });
   try {
     return NextResponse.json({ valid: true, payload: verifyClaimCode(body.claimCode) });
-  } catch {
-    return NextResponse.json({ valid: false, error: 'Invalid claim code.' }, { status: 401 });
+  } catch (error) {
+    const message = error instanceof Error && error.message.includes('CLAIM_SECRET')
+      ? error.message
+      : 'Invalid claim code.';
+    return NextResponse.json({ valid: false, error: message }, { status: 401 });
   }
 }

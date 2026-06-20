@@ -53,7 +53,7 @@ Use `simulation/25m/summary.csv`, `tier_ev.csv`, and `timer_sensitivity.csv` whe
 - `app/api/game/verify-claim`: validates signed claim code.
 - `src/lib/game/config.ts`: prize tiers, 15-second timer, difficulty bands, and prize-milestone hard rounds.
 - `src/lib/game/questions.ts`: crypto-random server-side question generator with cached candidate pools and no-repeat filtering.
-- `src/lib/game/store.ts`: run storage adapter. Uses Redis/KV REST env vars in production or memory in local dev.
+- `src/lib/game/store.ts`: stateless encrypted token adapter. No KV/Upstash env vars are required for Vercel production.
 - `src/lib/game/signing.ts`: encrypted run access tokens and signed claim codes.
 - `src/lib/game/data.ts`: generated CSV-backed Pokemon data.
 - `data/csv/pokestats-workbook.csv`: source of truth for Pokemon stats.
@@ -65,12 +65,12 @@ Use `simulation/25m/summary.csv`, `tier_ev.csv`, and `timer_sensitivity.csv` whe
 ## Build next
 
 1. Confirm actual buy costs for `2 Better English Packs` and `1 Paldean Fates Pack`; rerun the simulation if those differ from assumptions.
-2. Wire production Redis/KV in Vercel using `KV_REST_API_URL` + `KV_REST_API_TOKEN` or Upstash equivalents.
-3. Add Stripe Checkout or POS entry-code redemption.
-4. Add staff admin screen for claim verification and redemption.
-5. Add inventory caps and event configuration.
-6. Add analytics: reach rate by round, prize EV, actual margin.
-7. Add operator-controlled kiosk settings for live events.
+2. Add Stripe Checkout or POS entry-code redemption.
+3. Add staff admin screen for claim verification and redemption.
+4. Add inventory caps and event configuration.
+5. Add analytics: reach rate by round, prize EV, actual margin.
+6. Add operator-controlled kiosk settings for live events.
+7. Consider optional durable storage if you need stronger anti-replay protection than stateless encrypted tokens.
 8. Polish fullscreen game mode for tablets/event monitors.
 9. Re-run simulation after any timer, prize, stat-band, cost, or dataset change.
 

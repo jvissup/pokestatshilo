@@ -19,9 +19,19 @@ type ClaimState = { prize: PrizeTier; claimCode: string };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(data.error ?? 'Request failed.');
-  return data;
+  const raw = await response.text();
+  let data: (T & { error?: string }) | { error?: string } = {};
+
+  if (raw.trim()) {
+    try {
+      data = JSON.parse(raw) as T & { error?: string };
+    } catch {
+      data = { error: raw.slice(0, 300) };
+    }
+  }
+
+  if (!response.ok) throw new Error(data.error ?? `Request failed with status ${response.status}.`);
+  return data as T;
 }
 
 function money(value: number) {

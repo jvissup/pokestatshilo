@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
-import type { RunAccessToken, StoredRunState } from './types';
+import type { StoredRunState } from './types';
 
 function secret(name: 'GAME_SECRET' | 'CLAIM_SECRET'): string {
   const value = process.env[name];
@@ -44,6 +44,21 @@ function decryptJson<T>(token: string, name: 'GAME_SECRET' | 'CLAIM_SECRET'): T 
   return JSON.parse(cleartext) as T;
 }
 
+function isStoredRunState(value: unknown): value is StoredRunState {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<StoredRunState>;
+  return typeof state.runId === 'string'
+    && typeof state.playerSecret === 'string'
+    && typeof state.version === 'number'
+    && typeof state.streak === 'number'
+    && typeof state.bestPrizeStreak === 'number'
+    && (state.status === 'active' || state.status === 'lost' || state.status === 'claimed')
+    && Array.isArray(state.seenPokemonIds)
+    && 'currentQuestion' in state
+    && typeof state.startedAt === 'number'
+    && typeof state.updatedAt === 'number';
+}
+
 export function safeEqualString(a: string, b: string) {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
@@ -62,17 +77,24 @@ export function createRandomSeed() {
   return randomBytes(4).readUInt32BE(0);
 }
 
+type RunStateTokenPayload = {
+  kind: 'pokestats-run-state';
+  state: StoredRunState;
+  createdAt: number;
+};
+
 export function createRunToken(state: StoredRunState): string {
-  const access: RunAccessToken = {
-    runId: state.runId,
-    playerSecret: state.playerSecret,
-    version: state.version
-  };
-  return encryptJson(access, 'GAME_SECRET');
+  return encryptJson({ kind: 'pokestats-run-state', state, createdAt: Date.now() } satisfies RunStateTokenPayload, 'GAME_SECRET');
 }
 
-export function verifyRunToken(token: string): RunAccessToken {
-  return decryptJson<RunAccessToken>(token, 'GAME_SECRET');
+export function verifyRunToken(token: string): StoredRunState {
+  const payload = decryptJson<RunStateTokenPayload | StoredRunState>(token, 'GAME_SECRET');
+  if (isStoredRunState(payload)) return payload;
+  if (payload && typeof payload === 'object' && (payload as RunStateTokenPayload).kind === 'pokestats-run-state') {
+    const state = (payload as RunStateTokenPayload).state;
+    if (isStoredRunState(state)) return state;
+  }
+  throw new Error('Invalid run token. Start a new run.');
 }
 
 type ClaimPayload = { runId: string; streak: number; prizeStreak: number; prizeName: string; createdAt: number };
