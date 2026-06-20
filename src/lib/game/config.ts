@@ -8,17 +8,16 @@ export const AUTO_ADVANCE_MS = 1400;
 export const GUARANTEED_PRIZE = {
   name: '2 English Packs',
   cost: 16,
-  retail: 22,
   label: 'Guaranteed with entry'
 } as const;
 
 // Highest unlocked bonus prize only. Do not make cumulative unless you recalc EV.
 export const PRIZE_TIERS: PrizeTier[] = [
-  { streak: 9, name: '1 Ascended Heroes Pack', cost: 17, retail: 25, label: 'First unlock' },
-  { streak: 11, name: '1 Mega Evolution Tin', cost: 20, retail: 30, label: 'Tin tier' },
-  { streak: 13, name: '1 Ascended Heroes Tin', cost: 20, retail: 40, label: 'Value jump' },
-  { streak: 15, name: '1 Prismatic Tin', cost: 20, retail: 60, label: 'High value tin' },
-  { streak: 22, name: '1 Prismatic ETB', cost: 100, retail: 230, label: 'Grand prize', isGrandPrize: true }
+  { streak: 9, name: '1 Ascended Heroes Pack', cost: 17, label: 'First unlock' },
+  { streak: 11, name: '1 Mega Evolution Tin', cost: 20, label: 'Tin tier' },
+  { streak: 13, name: '1 Ascended Heroes Tin', cost: 20, label: 'Value jump' },
+  { streak: 15, name: '1 Prismatic Tin', cost: 20, label: 'High value tin' },
+  { streak: 22, name: '1 Prismatic ETB', cost: 100, label: 'Grand prize', isGrandPrize: true }
 ];
 
 export const STAT_LABELS: Record<StatKey, string> = {

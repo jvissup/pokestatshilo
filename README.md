@@ -4,20 +4,20 @@ A Vercel-ready Next.js starter for a timed Pokemon base-stat higher/lower game w
 
 ## Economics
 
-Players pay **$25** and receive **2 English Packs** to start. Those packs cost you **$16** and retail to the player for about **$22**.
+Players pay **$25** and receive **2 English Packs** to start. Those packs cost you **$16**.
 
 For a **30% target margin**, max variable cost is $17.50 per entry. After the $16 guaranteed packs, the bonus-prize expected-value budget is about **$1.50 per player**.
 
 The bonus prize is **highest unlocked only**, not cumulative.
 
-| Unlock | Prize | Your cost | Player retail value |
-|---:|---|---:|---:|
-| Entry | 2 English Packs | $16 | $22 |
-| 9 wins | 1 Ascended Heroes Pack | $17 | $25 |
-| 11 wins | 1 Mega Evolution Tin | $20 | $30 |
-| 13 wins | 1 Ascended Heroes Tin | $20 | $40 |
-| 15 wins | 1 Prismatic Tin | $20 | $60 |
-| 22 wins | 1 Prismatic ETB | $100 | $230 |
+| Unlock | Prize | Your cost |
+|---:|---|---:|
+| Entry | 2 English Packs | $16 |
+| 9 wins | 1 Ascended Heroes Pack | $17 |
+| 11 wins | 1 Mega Evolution Tin | $20 |
+| 13 wins | 1 Ascended Heroes Tin | $20 |
+| 15 wins | 1 Prismatic Tin | $20 |
+| 22 wins | 1 Prismatic ETB | $100 |
 
 Run the EV simulator:
 

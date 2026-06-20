@@ -9,15 +9,15 @@ Build a timed Pokemon base-stat higher/lower game. Players pay $25, receive 2 En
 ## Must preserve
 
 - Entry: $25.
-- Guaranteed item: 2 English Packs, cost $16, retail $22.
+- Guaranteed item: 2 English Packs, cost $16.
 - Target margin: 30%+ over many runs.
 - Bonus EV target: about $1.50 per player.
 - Prize tiers:
-  - 9 wins: 1 Ascended Heroes Pack, cost $17, retail $25.
-  - 11 wins: 1 Mega Evolution Tin, cost $20, retail $30.
-  - 13 wins: 1 Ascended Heroes Tin, cost $20, retail $40.
-  - 15 wins: 1 Prismatic Tin, cost $20, retail $60.
-  - 22 wins: 1 Prismatic ETB, cost $100, retail $230.
+  - 9 wins: 1 Ascended Heroes Pack, cost $17.
+  - 11 wins: 1 Mega Evolution Tin, cost $20.
+  - 13 wins: 1 Ascended Heroes Tin, cost $20.
+  - 15 wins: 1 Prismatic Tin, cost $20.
+  - 22 wins: 1 Prismatic ETB, cost $100.
 
 ## Current code map
 

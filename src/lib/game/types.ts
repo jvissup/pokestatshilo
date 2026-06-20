@@ -19,7 +19,6 @@ export type PrizeTier = {
   streak: number;
   name: string;
   cost: number;
-  retail: number;
   label: string;
   isGrandPrize?: boolean;
 };
