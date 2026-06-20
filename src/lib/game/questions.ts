@@ -3,6 +3,8 @@ import { POKEMON, toQuestionPokemon } from './data';
 import { pickOne, rngFromParts, shuffle } from './rng';
 import type { ComparisonKind, GameQuestion, Pokemon, RoundBand, StatKey } from './types';
 
+const EXTREME_HARD_ROUNDS = new Set([9, 11, 13, 15, 22]);
+
 export function getRoundBand(round: number): RoundBand {
   return ROUND_BANDS.find((band) => round >= band.fromRound && (band.toRound === undefined || round <= band.toRound)) ?? ROUND_BANDS.at(-1)!;
 }
@@ -45,18 +47,35 @@ function fallbackCandidates(statKey: StatKey): Candidate[] {
   return candidates;
 }
 
-export function makeQuestion(seed: number, round: number): GameQuestion {
+function candidatesForDeltaRange(statKey: StatKey, minDelta: number, maxDelta: number): Candidate[] {
+  const candidates: Candidate[] = [];
+  for (let i = 0; i < POKEMON.length; i += 1) {
+    for (let j = i + 1; j < POKEMON.length; j += 1) {
+      const left = POKEMON[i];
+      const right = POKEMON[j];
+      const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
+      if (delta >= minDelta && delta <= maxDelta) {
+        candidates.push({ left, right, delta });
+      }
+    }
+  }
+  return candidates;
+}
+
+export function makeQuestion(seed: number, round: number, questionNonce = 0): GameQuestion {
   const band = getRoundBand(round);
-  const rng = rngFromParts(seed, round, 'question');
-  const comparisonKind = chooseKind(rng, band);
-  const statKey = chooseStat(rng, comparisonKind);
-  const pool = candidatesFor(statKey, band);
-  const candidate = pickOne(rng, pool.length ? pool : fallbackCandidates(statKey));
+  const rng = rngFromParts(seed, round, questionNonce, 'question');
+  const extremeHard = EXTREME_HARD_ROUNDS.has(round);
+  const comparisonKind = extremeHard ? 'same-stat' : chooseKind(rng, band);
+  const statKey = extremeHard ? pickOne(rng, STAT_KEYS) : chooseStat(rng, comparisonKind);
+  const pool = extremeHard ? candidatesForDeltaRange(statKey, 1, 2) : candidatesFor(statKey, band);
+  const fallbackPool = extremeHard ? candidatesForDeltaRange(statKey, 1, 4) : fallbackCandidates(statKey);
+  const candidate = pickOne(rng, pool.length ? pool : fallbackPool.length ? fallbackPool : fallbackCandidates(statKey));
   const [left, right] = shuffle(rng, [candidate.left, candidate.right]);
   const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
 
   return {
-    questionId: `${seed}.${round}.${statKey}.${left.id}.${right.id}`,
+    questionId: `${seed}.${questionNonce}.${round}.${statKey}.${left.id}.${right.id}`,
     round,
     prompt: `Which Pokemon has the higher ${STAT_LABELS[statKey]}?`,
     statKey,

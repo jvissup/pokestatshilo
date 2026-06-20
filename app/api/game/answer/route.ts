@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   try { state = verifyRunToken(body.token); } catch { return NextResponse.json({ error: 'Invalid token.' }, { status: 401 }); }
   if (state.status !== 'active') return NextResponse.json({ error: 'Run is not active.' }, { status: 409 });
 
-  const question = makeQuestion(state.seed, state.streak + 1);
+  const question = makeQuestion(state.seed, state.streak + 1, state.questionNonce);
   if (question.questionId !== body.questionId) {
     return NextResponse.json({ error: 'Question does not match current run.' }, { status: 409 });
   }
