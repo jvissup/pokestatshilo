@@ -81,7 +81,8 @@ function candidatesForDeltaRange(statKey: StatKey, minDelta: number, maxDelta: n
 }
 
 function isExtremeHardMilestoneRound(round: number): boolean {
-  return EXTREME_HARD_WIN_STREAKS.has(round - 1);
+  const winsBeforeRound = round - 1;
+  return EXTREME_HARD_WIN_STREAKS.has(winsBeforeRound);
 }
 
 export function makeQuestion(seed: number, round: number, questionNonce = 0): GameQuestion {
@@ -90,11 +91,16 @@ export function makeQuestion(seed: number, round: number, questionNonce = 0): Ga
   const extremeHard = isExtremeHardMilestoneRound(round);
   const comparisonKind = extremeHard ? 'same-stat' : chooseKind(rng, band);
   const statKey = extremeHard ? pickOne(rng, STAT_KEYS) : chooseStat(rng, comparisonKind);
-  const pool = extremeHard ? candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_MAX_DELTA) : candidatesFor(statKey, band);
-  const fallbackPool = extremeHard ? candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_FALLBACK_MAX_DELTA) : fallbackCandidates(statKey);
-  let candidatePool = pool;
-  if (!candidatePool.length) candidatePool = fallbackPool;
-  if (!candidatePool.length) candidatePool = fallbackCandidates(statKey);
+  let candidatePool: Candidate[];
+  if (extremeHard) {
+    const strictPool = candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_MAX_DELTA);
+    const relaxedPool = candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_FALLBACK_MAX_DELTA);
+    const fullPool = fallbackCandidates(statKey);
+    candidatePool = strictPool.length ? strictPool : relaxedPool.length ? relaxedPool : fullPool;
+  } else {
+    const standardPool = candidatesFor(statKey, band);
+    candidatePool = standardPool.length ? standardPool : fallbackCandidates(statKey);
+  }
   const candidate = pickOne(rng, candidatePool);
   const [left, right] = shuffle(rng, [candidate.left, candidate.right]);
   const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
