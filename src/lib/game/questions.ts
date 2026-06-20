@@ -14,12 +14,27 @@ import type { ComparisonKind, GameQuestion, Pokemon, RoundBand, StatKey, StoredQ
 const POKEMON_BY_ID = new Map(POKEMON.map((pokemon) => [pokemon.id, pokemon]));
 const ALL_STAT_KEYS: StatKey[] = [...STAT_KEYS, 'total'];
 
+const EXTREME_HARD_WIN_STREAKS = new Set([8, 10, 12, 14, 21]);
+const EXTREME_HARD_MIN_DELTA = 1;
+const EXTREME_HARD_MAX_DELTA = 2;
+const EXTREME_HARD_FALLBACK_MAX_DELTA = 4;
+
 export function getRoundBand(round: number): RoundBand {
   return ROUND_BANDS.find((band) => round >= band.fromRound && (band.toRound === undefined || round <= band.toRound)) ?? ROUND_BANDS.at(-1)!;
 }
 
 type Candidate = { left: Pokemon; right: Pokemon; delta: number };
+const candidateCache = new Map<string, Candidate[]>();
 
+function getCachedCandidates(key: string, build: () => Candidate[]): Candidate[] {
+  const cached = candidateCache.get(key);
+  if (cached) return cached;
+  const candidates = build();
+  candidateCache.set(key, candidates);
+  return candidates;
+}
+
+<<<<<<< HEAD
 type CandidateOptions = {
   minDelta?: number;
   maxDelta?: number;
@@ -96,6 +111,55 @@ function extremeCandidates(statKey: StatKey, seenIds: Set<number>) {
   const relaxed = availableCandidates(candidatesFor(statKey, { minDelta: EXTREME_HARD_MIN_DELTA, maxDelta: EXTREME_HARD_FALLBACK_MAX_DELTA }), seenIds);
   if (relaxed.length) return relaxed;
   return availableCandidates(candidatesFor(statKey, {}), seenIds);
+=======
+function candidatesFor(statKey: StatKey, band: RoundBand): Candidate[] {
+  return getCachedCandidates(`band:${statKey}:${band.minDelta}:${band.maxDelta ?? 'none'}`, () => {
+    const candidates: Candidate[] = [];
+    for (let i = 0; i < POKEMON.length; i += 1) {
+      for (let j = i + 1; j < POKEMON.length; j += 1) {
+        const left = POKEMON[i];
+        const right = POKEMON[j];
+        const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
+        if (delta > 0 && delta >= band.minDelta && (band.maxDelta === undefined || delta <= band.maxDelta)) {
+          candidates.push({ left, right, delta });
+        }
+      }
+    }
+    return candidates;
+  });
+}
+
+function fallbackCandidates(statKey: StatKey): Candidate[] {
+  return getCachedCandidates(`fallback:${statKey}`, () => {
+    const candidates: Candidate[] = [];
+    for (let i = 0; i < POKEMON.length; i += 1) {
+      for (let j = i + 1; j < POKEMON.length; j += 1) {
+        const left = POKEMON[i];
+        const right = POKEMON[j];
+        const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
+        if (delta > 0) candidates.push({ left, right, delta });
+      }
+    }
+    return candidates;
+  });
+}
+
+function candidatesForDeltaRange(statKey: StatKey, minDelta: number, maxDelta: number): Candidate[] {
+  return getCachedCandidates(`delta:${statKey}:${minDelta}:${maxDelta}`, () => {
+    const candidates: Candidate[] = [];
+    for (let i = 0; i < POKEMON.length; i += 1) {
+      for (let j = i + 1; j < POKEMON.length; j += 1) {
+        const left = POKEMON[i];
+        const right = POKEMON[j];
+        const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
+        if (delta >= minDelta && delta <= maxDelta) {
+          candidates.push({ left, right, delta });
+        }
+      }
+    }
+    return candidates;
+  });
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
 }
 
 function isExtremeHardMilestoneRound(round: number): boolean {
@@ -103,8 +167,29 @@ function isExtremeHardMilestoneRound(round: number): boolean {
   return EXTREME_HARD_WIN_STREAKS.has(winsBeforeRound);
 }
 
+<<<<<<< HEAD
 function buildQuestion(round: number, comparisonKind: ComparisonKind, statKey: StatKey, candidate: Candidate, seconds: number): GameQuestion {
   const [left, right] = secureShuffle([candidate.left, candidate.right]);
+=======
+export function makeQuestion(seed: number, round: number, questionNonce = 0): GameQuestion {
+  const band = getRoundBand(round);
+  const rng = rngFromParts(seed, round, questionNonce, 'question');
+  const extremeHard = isExtremeHardMilestoneRound(round);
+  const comparisonKind = extremeHard ? 'same-stat' : chooseKind(rng, band);
+  const statKey = chooseStat(rng, comparisonKind);
+  let candidatePool: Candidate[];
+  if (extremeHard) {
+    const strictPool = candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_MAX_DELTA);
+    const relaxedPool = candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_FALLBACK_MAX_DELTA);
+    const fullPool = fallbackCandidates(statKey);
+    candidatePool = strictPool.length ? strictPool : relaxedPool.length ? relaxedPool : fullPool;
+  } else {
+    const standardPool = candidatesFor(statKey, band);
+    candidatePool = standardPool.length ? standardPool : fallbackCandidates(statKey);
+  }
+  const candidate = pickOne(rng, candidatePool);
+  const [left, right] = shuffle(rng, [candidate.left, candidate.right]);
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
   return {
     questionId: randomQuestionId(round),

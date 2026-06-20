@@ -12,8 +12,13 @@ export async function POST() {
   const question = makeQuestion(1, []);
   const state: StoredRunState = {
     runId: createRunId(),
+<<<<<<< HEAD
     playerSecret: createPlayerSecret(),
     version: 1,
+=======
+    seed: createRandomSeed(),
+    questionNonce: createRandomSeed(),
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
     streak: 0,
     bestPrizeStreak: 0,
     status: 'active',
@@ -29,6 +34,10 @@ export async function POST() {
     streak: state.streak,
     bestPrizeStreak: state.bestPrizeStreak,
     status: state.status,
+<<<<<<< HEAD
     question: toPublicQuestion(question, false)
+=======
+    question: toPublicQuestion(makeQuestion(state.seed, 1, state.questionNonce), false)
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   });
 }

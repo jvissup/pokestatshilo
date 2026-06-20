@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { addQuestionPokemonToSeen, hydrateQuestion, makeQuestion, storeQuestion } from '@/lib/game/questions';
 import { toPublicQuestion } from '@/lib/game/public';
+<<<<<<< HEAD
 import { loadRunFromToken, nextRunVersion, saveRunAndCreateToken } from '@/lib/game/store';
 import type { StoredRunState } from '@/lib/game/types';
+=======
+import { createRandomSeed, signRunState, verifyRunToken } from '@/lib/game/signing';
+import type { SignedRunState } from '@/lib/game/types';
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
 
 export const runtime = 'nodejs';
 
@@ -14,6 +19,7 @@ export async function POST(request: Request) {
   try { state = await loadRunFromToken(body.token); } catch { return NextResponse.json({ error: 'Invalid, expired, or stale token.' }, { status: 401 }); }
   if (state.status !== 'active') return NextResponse.json({ error: 'Run is not active.' }, { status: 409 });
 
+<<<<<<< HEAD
   if (state.currentQuestion) {
     const question = hydrateQuestion(state.currentQuestion);
     return NextResponse.json({
@@ -36,12 +42,19 @@ export async function POST(request: Request) {
   };
   const token = await saveRunAndCreateToken(nextState);
 
+=======
+  const nextState = { ...state, questionNonce: createRandomSeed(), updatedAt: Date.now() };
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   return NextResponse.json({
     token,
     runId: nextState.runId,
     streak: nextState.streak,
     bestPrizeStreak: nextState.bestPrizeStreak,
     status: nextState.status,
+<<<<<<< HEAD
     question: toPublicQuestion(question, false)
+=======
+    question: toPublicQuestion(makeQuestion(nextState.seed, nextState.streak + 1, nextState.questionNonce), false)
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   });
 }

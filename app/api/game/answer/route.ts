@@ -20,7 +20,11 @@ export async function POST(request: Request) {
   if (state.status !== 'active') return NextResponse.json({ error: 'Run is not active.' }, { status: 409 });
   if (!state.currentQuestion) return NextResponse.json({ error: 'No active question for this run.' }, { status: 409 });
 
+<<<<<<< HEAD
   const question = hydrateQuestion(state.currentQuestion);
+=======
+  const question = makeQuestion(state.seed, state.streak + 1, state.questionNonce);
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   if (question.questionId !== body.questionId) {
     return NextResponse.json({ error: 'Question does not match current run.' }, { status: 409 });
   }

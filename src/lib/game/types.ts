@@ -19,7 +19,6 @@ export type PrizeTier = {
   streak: number;
   name: string;
   cost: number;
-  retail: number;
   label: string;
   isGrandPrize?: boolean;
 };
@@ -75,8 +74,13 @@ export type RunStatus = 'active' | 'lost' | 'claimed';
 
 export type StoredRunState = {
   runId: string;
+<<<<<<< HEAD
   playerSecret: string;
   version: number;
+=======
+  seed: number;
+  questionNonce: number;
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
   streak: number;
   bestPrizeStreak: number;
   status: RunStatus;

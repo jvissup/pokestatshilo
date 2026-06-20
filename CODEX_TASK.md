@@ -9,8 +9,9 @@ Build a timed Pokemon base-stat higher/lower game. Players pay $25, receive 2 En
 ## Must preserve
 
 - Entry: $25.
-- Guaranteed item: 2 English Packs, cost $16, retail $22.
+- Guaranteed item: 2 English Packs, cost $16.
 - Target margin: 30%+ over many runs.
+<<<<<<< HEAD
 - Bonus EV target: about $1.50 per player or lower.
 - Timer: 15 seconds per question unless the ladder is recalibrated.
 - Prize tiers from the 25M-run recalibration:
@@ -33,6 +34,15 @@ Assumptions:
 - Profiles modeled: Experienced Pokemon Player, Pokemon Collector, Novice.
 
 Use `simulation/25m/summary.csv`, `tier_ev.csv`, and `timer_sensitivity.csv` when changing prize thresholds or the timer.
+=======
+- Bonus EV target: about $1.50 per player.
+- Prize tiers:
+  - 9 wins: 1 Ascended Heroes Pack, cost $17.
+  - 11 wins: 1 Mega Evolution Tin, cost $20.
+  - 13 wins: 1 Ascended Heroes Tin, cost $20.
+  - 15 wins: 1 Prismatic Tin, cost $20.
+  - 22 wins: 1 Prismatic ETB, cost $100.
+>>>>>>> 669aff68fa823c56f19707423b9a4e9bd7a9c1b1
 
 ## Current code map
 
