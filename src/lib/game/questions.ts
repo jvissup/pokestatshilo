@@ -90,7 +90,7 @@ export function makeQuestion(seed: number, round: number, questionNonce = 0): Ga
   const rng = rngFromParts(seed, round, questionNonce, 'question');
   const extremeHard = isExtremeHardMilestoneRound(round);
   const comparisonKind = extremeHard ? 'same-stat' : chooseKind(rng, band);
-  const statKey = extremeHard ? pickOne(rng, STAT_KEYS) : chooseStat(rng, comparisonKind);
+  const statKey = chooseStat(rng, comparisonKind);
   let candidatePool: Candidate[];
   if (extremeHard) {
     const strictPool = candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_MAX_DELTA);
@@ -106,7 +106,7 @@ export function makeQuestion(seed: number, round: number, questionNonce = 0): Ga
   const delta = Math.abs(left.stats[statKey] - right.stats[statKey]);
 
   return {
-    questionId: `${seed}.${questionNonce}.${round}.${statKey}.${left.id}.${right.id}`,
+    questionId: `${seed}.${round}.${statKey}.${left.id}.${right.id}`,
     round,
     prompt: `Which Pokemon has the higher ${STAT_LABELS[statKey]}?`,
     statKey,
