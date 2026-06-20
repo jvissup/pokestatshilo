@@ -11,6 +11,7 @@ export async function POST() {
   const state: SignedRunState = {
     runId: createRunId(),
     seed: createRandomSeed(),
+    questionNonce: createRandomSeed(),
     streak: 0,
     bestPrizeStreak: 0,
     status: 'active',
@@ -23,6 +24,6 @@ export async function POST() {
     streak: state.streak,
     bestPrizeStreak: state.bestPrizeStreak,
     status: state.status,
-    question: toPublicQuestion(makeQuestion(state.seed, 1), false)
+    question: toPublicQuestion(makeQuestion(state.seed, 1, state.questionNonce), false)
   });
 }

@@ -62,6 +62,7 @@ export type PublicGameQuestion = Omit<GameQuestion, 'left' | 'right'> & {
 export type SignedRunState = {
   runId: string;
   seed: number;
+  questionNonce: number;
   streak: number;
   bestPrizeStreak: number;
   status: 'active' | 'lost' | 'claimed';
