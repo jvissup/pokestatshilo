@@ -10,6 +10,7 @@ export function toPublicQuestion(question: GameQuestion, reveal = false): Public
   const correctSide = getCorrectSide(question);
   return {
     ...question,
+    delta: reveal ? question.delta : 0,
     left: publicPokemon(question.left, reveal),
     right: publicPokemon(question.right, reveal),
     reveal: reveal ? {

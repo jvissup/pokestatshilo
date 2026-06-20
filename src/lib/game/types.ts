@@ -53,6 +53,17 @@ export type GameQuestion = {
   right: QuestionPokemon;
 };
 
+export type StoredQuestion = {
+  questionId: string;
+  round: number;
+  statKey: StatKey;
+  comparisonKind: ComparisonKind;
+  seconds: number;
+  leftId: number;
+  rightId: number;
+  createdAt: number;
+};
+
 export type PublicQuestionPokemon = Omit<QuestionPokemon, 'stats'> & { stats?: BaseStats };
 export type PublicGameQuestion = Omit<GameQuestion, 'left' | 'right'> & {
   left: PublicQuestionPokemon;
@@ -60,12 +71,23 @@ export type PublicGameQuestion = Omit<GameQuestion, 'left' | 'right'> & {
   reveal?: { correctSide: 'left' | 'right'; leftValue: number; rightValue: number };
 };
 
-export type SignedRunState = {
+export type RunStatus = 'active' | 'lost' | 'claimed';
+
+export type StoredRunState = {
   runId: string;
-  seed: number;
+  playerSecret: string;
+  version: number;
   streak: number;
   bestPrizeStreak: number;
-  status: 'active' | 'lost' | 'claimed';
+  status: RunStatus;
+  seenPokemonIds: number[];
+  currentQuestion: StoredQuestion | null;
   startedAt: number;
   updatedAt: number;
+};
+
+export type RunAccessToken = {
+  runId: string;
+  playerSecret: string;
+  version: number;
 };

@@ -1,28 +1,34 @@
 import { NextResponse } from 'next/server';
-import { makeQuestion } from '@/lib/game/questions';
+import { addQuestionPokemonToSeen, makeQuestion, storeQuestion } from '@/lib/game/questions';
 import { toPublicQuestion } from '@/lib/game/public';
-import { createRandomSeed, createRunId, signRunState } from '@/lib/game/signing';
-import type { SignedRunState } from '@/lib/game/types';
+import { createPlayerSecret, createRunId } from '@/lib/game/signing';
+import { saveRunAndCreateToken } from '@/lib/game/store';
+import type { StoredRunState } from '@/lib/game/types';
 
 export const runtime = 'nodejs';
 
 export async function POST() {
   const now = Date.now();
-  const state: SignedRunState = {
+  const question = makeQuestion(1, []);
+  const state: StoredRunState = {
     runId: createRunId(),
-    seed: createRandomSeed(),
+    playerSecret: createPlayerSecret(),
+    version: 1,
     streak: 0,
     bestPrizeStreak: 0,
     status: 'active',
+    seenPokemonIds: addQuestionPokemonToSeen([], question),
+    currentQuestion: storeQuestion(question),
     startedAt: now,
     updatedAt: now
   };
+  const token = await saveRunAndCreateToken(state);
   return NextResponse.json({
-    token: signRunState(state),
+    token,
     runId: state.runId,
     streak: state.streak,
     bestPrizeStreak: state.bestPrizeStreak,
     status: state.status,
-    question: toPublicQuestion(makeQuestion(state.seed, 1), false)
+    question: toPublicQuestion(question, false)
   });
 }
