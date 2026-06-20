@@ -23,25 +23,18 @@ export function mulberry32(seed: number): Rng {
 }
 
 export function rngFromParts(...parts: Array<string | number>): Rng {
-  const seedFactory = xmur3(parts.join(':'));
-  return mulberry32(seedFactory());
-}
-
-export function intBetween(rng: Rng, minInclusive: number, maxExclusive: number): number {
-  return Math.floor(rng() * (maxExclusive - minInclusive)) + minInclusive;
+  return mulberry32(xmur3(parts.join(':'))());
 }
 
 export function pickOne<T>(rng: Rng, items: T[]): T {
-  if (items.length === 0) {
-    throw new Error('Cannot pick from an empty array.');
-  }
-  return items[intBetween(rng, 0, items.length)];
+  if (!items.length) throw new Error('Cannot pick from empty array.');
+  return items[Math.floor(rng() * items.length)];
 }
 
 export function shuffle<T>(rng: Rng, items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = intBetween(rng, 0, i + 1);
+    const j = Math.floor(rng() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;

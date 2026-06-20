@@ -1,54 +1,54 @@
-# Codex Task: Build Production Version of Pokemon Base Stat Prize Ladder
+# Codex Task: Productionize Pokemon Base Stat Prize Ladder
 
-You are working in a Next.js app-router project designed for Vercel hosting.
+You are inside a Next.js app-router project for Vercel.
 
-## Product goal
+## Product brief
 
-Build a timed Pokemon base-stat higher/lower game. Players pay $25 and receive 2 English Packs guaranteed. They then answer timed comparisons to unlock bonus prize tiers. Longer streak = bigger prize. Only the highest unlocked bonus prize is awarded.
+Build a timed Pokemon base-stat higher/lower game. Players pay $25, receive 2 English Packs guaranteed, then answer Pokemon stat comparisons to unlock a physical prize ladder. Longer streak = bigger prize. Only the highest unlocked bonus prize is awarded.
 
-## Current app
+## Must preserve
 
-- `app/page.tsx`: playable client UI.
-- `app/api/game/start`: starts a signed run.
-- `app/api/game/answer`: checks answer server-side and reveals stats.
-- `app/api/game/next`: starts the next timed question after reveal.
-- `app/api/game/claim`: creates signed claim code.
-- `app/api/game/verify-claim`: verifies signed claim code.
-- `src/lib/game/config.ts`: prize tiers, timers, difficulty bands, target margin.
-- `src/lib/game/questions.ts`: question generator.
-- `src/lib/game/data.ts`: starter Pokemon dataset.
-- `scripts/ev-simulator.mjs`: expected-value calculator.
-- `scripts/build-pokemon-dataset.mjs`: optional PokéAPI dataset builder.
-
-## Must keep
-
-- Entry fee: $25.
-- Guaranteed prize: 2 English Packs, cost $16, retail $22.
-- Target operating margin: 30%+ over many runs.
-- Bonus EV budget: approximately $1.50 per entry unless entry fee or guaranteed pack cost changes.
-- Prize gates:
+- Entry: $25.
+- Guaranteed item: 2 English Packs, cost $16, retail $22.
+- Target margin: 30%+ over many runs.
+- Bonus EV target: about $1.50 per player.
+- Prize tiers:
   - 9 wins: 1 Ascended Heroes Pack, cost $17, retail $25.
   - 11 wins: 1 Mega Evolution Tin, cost $20, retail $30.
   - 13 wins: 1 Ascended Heroes Tin, cost $20, retail $40.
   - 15 wins: 1 Prismatic Tin, cost $20, retail $60.
   - 22 wins: 1 Prismatic ETB, cost $100, retail $230.
 
+## Current code map
+
+- `app/page.tsx`: playable UI, popout/kiosk mode, fullscreen button, auto-timeout, and correct-answer auto-advance.
+- `app/api/game/start`: starts signed run.
+- `app/api/game/answer`: checks answer server-side and reveals stats.
+- `app/api/game/next`: starts next timed question after reveal.
+- `app/api/game/claim`: creates signed claim code.
+- `app/api/game/verify-claim`: validates signed claim code.
+- `src/lib/game/config.ts`: prize tiers and difficulty bands.
+- `src/lib/game/questions.ts`: deterministic server-side question generator.
+- `src/lib/game/data.ts`: demo Pokemon data and image URL helpers.
+- `scripts/build-pokemon-dataset.mjs`: pulls Pokemon.com image metadata and PokéAPI stats; can download images to public folder.
+- `scripts/ev-simulator.mjs`: EV math simulator.
+
 ## Build next
 
-1. Add a database-backed run ledger. Recommended tables:
-   - `runs`: run id, payment id, seed, streak, status, timestamps.
-   - `questions`: run id, round, question id, left id, right id, stat key, correct side, answered at.
-   - `claims`: claim code hash, run id, prize tier, redeemed at, staff user.
-   - `inventory`: prize tier, on hand, reserved, redeemed.
-2. Make signed run tokens one-time-use or store the current question server-side.
-3. Add Stripe Checkout or event POS entry-code redemption.
-4. Add staff admin page for verifying and redeeming claims.
-5. Add configurable event mode: free-play demo vs paid prize mode.
-6. Add analytics for actual reach probability by round and prize EV.
-7. Add accessibility pass and mobile event kiosk mode.
+1. Add durable DB-backed sessions.
+2. Store current question server-side and make answer tokens one-time use.
+3. Add Stripe Checkout or POS entry-code redemption.
+4. Add staff admin screen for claim verification and redemption.
+5. Add inventory caps and event configuration.
+6. Add analytics: reach rate by round, prize EV, actual margin.
+7. Add operator-controlled kiosk settings for live events.
+8. Polish fullscreen game mode for tablets/event monitors.
 
-## Safety constraints
+## Hard requirements
 
-Do not expose unrevealed stat values to the client before an answer is locked.
-Do not make bonus prizes cumulative unless you recalculate EV and adjust gates.
-Do not launch paid prize mode without legal/IP review and proper contest rules.
+- Keep the 25-second round timer unless economics/difficulty are recalculated.
+- Keep correct-answer auto-advance unless a future kiosk flow intentionally changes it.
+- Never expose unrevealed stat values to the client.
+- Keep image handling per Pokemon: every generated Pokemon should have an `imageUrl`, `fallbackImageUrl`, and `pokemonComUrl`.
+- Do not make prizes cumulative without recalculating EV.
+- Do not launch paid public prize mode without legal/IP review.

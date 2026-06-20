@@ -17,15 +17,12 @@ export async function POST() {
     startedAt: now,
     updatedAt: now
   };
-  const token = signRunState(state);
-  const question = makeQuestion(state.seed, 1);
-
   return NextResponse.json({
-    token,
+    token: signRunState(state),
     runId: state.runId,
     streak: state.streak,
     bestPrizeStreak: state.bestPrizeStreak,
     status: state.status,
-    question: toPublicQuestion(question, false)
+    question: toPublicQuestion(makeQuestion(state.seed, 1), false)
   });
 }

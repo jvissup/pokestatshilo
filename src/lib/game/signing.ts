@@ -1,82 +1,61 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import type { SignedRunState } from './types';
 
-function base64UrlEncode(input: Buffer | string): string {
-  return Buffer.from(input).toString('base64url');
+function secret(name: 'GAME_SECRET' | 'CLAIM_SECRET'): string {
+  const value = process.env[name];
+  if (value && value.length >= 32) return value;
+  if (process.env.NODE_ENV === 'production') throw new Error(`${name} must be at least 32 characters.`);
+  return `${name}-dev-only-change-before-production-000000000000`;
 }
 
-function base64UrlDecode(input: string): Buffer {
-  return Buffer.from(input, 'base64url');
+function sign(payload: string, key: string) {
+  return createHmac('sha256', key).update(payload).digest('base64url');
 }
 
-function getSecret(name: 'GAME_SECRET' | 'CLAIM_SECRET'): string {
-  const secret = process.env[name];
-  if (secret && secret.length >= 32) {
-    return secret;
-  }
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(`${name} must be set to at least 32 characters in production.`);
-  }
-  return `${name}-dev-only-secret-change-before-production-000000000000`;
+function encodeJson(value: unknown) {
+  return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function signPayload(payload: string, secret: string): string {
-  return createHmac('sha256', secret).update(payload).digest('base64url');
+function decodeJson<T>(value: string): T {
+  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as T;
+}
+
+export function createRunId() {
+  return randomBytes(10).toString('hex');
+}
+
+export function createRandomSeed() {
+  return randomBytes(4).readUInt32BE(0);
 }
 
 export function signRunState(state: SignedRunState): string {
-  const payload = base64UrlEncode(JSON.stringify(state));
-  const signature = signPayload(payload, getSecret('GAME_SECRET'));
-  return `${payload}.${signature}`;
+  const payload = encodeJson(state);
+  return `${payload}.${sign(payload, secret('GAME_SECRET'))}`;
 }
 
 export function verifyRunToken(token: string): SignedRunState {
   const [payload, signature] = token.split('.');
-  if (!payload || !signature) {
-    throw new Error('Malformed token.');
-  }
-  const expected = signPayload(payload, getSecret('GAME_SECRET'));
-  const actualBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  if (actualBuffer.length !== expectedBuffer.length || !timingSafeEqual(actualBuffer, expectedBuffer)) {
-    throw new Error('Invalid token signature.');
-  }
-  const decoded = JSON.parse(base64UrlDecode(payload).toString('utf8')) as SignedRunState;
-  return decoded;
+  if (!payload || !signature) throw new Error('Malformed token.');
+  const expected = sign(payload, secret('GAME_SECRET'));
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) throw new Error('Invalid token.');
+  return decodeJson<SignedRunState>(payload);
 }
 
-type ClaimPayload = {
-  runId: string;
-  streak: number;
-  prizeStreak: number;
-  prizeName: string;
-  createdAt: number;
-};
-
-export function createRunId(): string {
-  return randomBytes(10).toString('hex');
-}
-
-export function createRandomSeed(): number {
-  return randomBytes(4).readUInt32BE(0);
-}
+type ClaimPayload = { runId: string; streak: number; prizeStreak: number; prizeName: string; createdAt: number };
 
 export function createClaimCode(payload: ClaimPayload): string {
-  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const signature = signPayload(encodedPayload, getSecret('CLAIM_SECRET'));
-  return `${encodedPayload}.${signature}`;
+  const encoded = encodeJson(payload);
+  return `${encoded}.${sign(encoded, secret('CLAIM_SECRET'))}`;
 }
 
 export function verifyClaimCode(code: string): ClaimPayload {
   const [payload, signature] = code.split('.');
-  if (!payload || !signature) {
-    throw new Error('Malformed claim code.');
-  }
-  const expected = signPayload(payload, getSecret('CLAIM_SECRET'));
-  const actualBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  if (actualBuffer.length !== expectedBuffer.length || !timingSafeEqual(actualBuffer, expectedBuffer)) {
-    throw new Error('Invalid claim signature.');
-  }
-  return JSON.parse(base64UrlDecode(payload).toString('utf8')) as ClaimPayload;
+  if (!payload || !signature) throw new Error('Malformed code.');
+  const expected = sign(payload, secret('CLAIM_SECRET'));
+  const a = Buffer.from(signature);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) throw new Error('Invalid code.');
+  return decodeJson<ClaimPayload>(payload);
 }

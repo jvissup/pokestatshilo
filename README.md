@@ -1,10 +1,14 @@
 # Pokemon Base Stat Prize Ladder
 
-A Vercel-ready Next.js starter for a timed base-stat higher/lower game with a physical prize ladder.
+A Vercel-ready Next.js starter for a timed Pokemon base-stat higher/lower game with a physical prize ladder.
 
-Players pay **$25** and receive **2 English Packs** to start. Bonus prizes unlock only when a player reaches the required streak. The bonus ladder is designed as **highest unlocked prize only**, not cumulative, because cumulative prizes change the expected-value math.
+## Economics
 
-## Prize ladder
+Players pay **$25** and receive **2 English Packs** to start. Those packs cost you **$16** and retail to the player for about **$22**.
+
+For a **30% target margin**, max variable cost is $17.50 per entry. After the $16 guaranteed packs, the bonus-prize expected-value budget is about **$1.50 per player**.
+
+The bonus prize is **highest unlocked only**, not cumulative.
 
 | Unlock | Prize | Your cost | Player retail value |
 |---:|---|---:|---:|
@@ -15,50 +19,53 @@ Players pay **$25** and receive **2 English Packs** to start. Bonus prizes unloc
 | 15 wins | 1 Prismatic Tin | $20 | $60 |
 | 22 wins | 1 Prismatic ETB | $100 | $230 |
 
-At a $25 entry fee and a 30% target margin, the max total variable cost is $17.50. Because the guaranteed packs cost $16, the target bonus prize expected value is about **$1.50 per player**.
-
-Run the EV helper:
+Run the EV simulator:
 
 ```bash
 npm run ev
 ```
 
-The simulator uses three player-strength profiles and assumes the highest unlocked bonus prize is awarded. Tune `scripts/ev-simulator.mjs` after you collect real results.
+## Image pulling
 
-## Game design
-
-- Rounds 1-3: mostly total base stat comparisons with large stat gaps.
-- Rounds 4-6: total and exact-stat mix.
-- Rounds 7-9: more exact-stat questions.
-- Rounds 10-15: tight exact-stat questions under shorter timers.
-- Rounds 16+: tiny deltas and 5-second timers, making the ETB genuinely hard.
-
-The question generator avoids ties and chooses pairings by stat-difference bands. Edit `src/lib/game/config.ts` to tune timers, stat gaps, and prize gates.
-
-## Data and images
-
-The starter seed includes Gen 1 Pokemon base stats for a working demo. Images are referenced from Pokemon.com asset URLs and each card links to the matching official Pokédex page.
-
-For a larger dataset, run:
+The demo seed uses Pokemon.com-style image URLs by Pokédex number. For a full dataset with image URLs for each Pokemon, run:
 
 ```bash
 npm run seed:pokemon
 ```
 
-That script fetches base stats from PokéAPI and writes `src/lib/game/data.generated.ts`. To use the generated file, either rename it to `src/lib/game/data.ts` or change the import in `src/lib/game/questions.ts` from `./data` to `./data.generated`.
+That command pulls:
 
-Pokemon.com does not provide a stable public JSON endpoint for numeric base stats. For a commercial deployment, use a licensed source or get written permission for the Pokémon marks/images/assets you display.
+- Pokemon.com Pokédex metadata, including `ThumbnailImage`, slug, detail page URL, and types.
+- PokéAPI base stats.
 
-## Local setup
+To physically download Pokemon images into `public/images/pokemon` and point the dataset at local files, run:
+
+```bash
+npm run images:pokemon
+```
+
+The image download mode is useful if you want Vercel to serve static images from the app instead of relying on remote image URLs. Make sure you have the rights to host/use these assets before running a paid public event.
+
+## Game design
+
+- Early rounds: larger total-stat gaps.
+- Mid rounds: mix of total base stats and exact stat-to-stat comparisons.
+- Late rounds: exact stat comparisons with tighter deltas.
+- Timer: 25 seconds per round by default.
+- Correct answers reveal stats briefly, then auto-advance to the next round.
+- Popout/fullscreen mode: use Popout Game to open a kiosk-style full-screen-sized window. Start Fullscreen Game and Enter Fullscreen request true browser fullscreen from a user click.
+- ETB tier: 22-win streak, intentionally hardest to reach.
+
+Edit `src/lib/game/config.ts` to change the 25-second timer, auto-advance delay, stat-difference bands, prize thresholds, or prize costs.
+
+## Setup
 
 ```bash
 npm install
 cp .env.example .env.local
-# edit .env.local and set GAME_SECRET and CLAIM_SECRET
+# edit .env.local with GAME_SECRET and CLAIM_SECRET
 npm run dev
 ```
-
-Open `http://localhost:3000`.
 
 Generate secrets:
 
@@ -69,25 +76,21 @@ openssl rand -hex 32
 ## Deploy to Vercel
 
 1. Push this folder to GitHub.
-2. Import the repo in Vercel.
-3. Add environment variables:
-   - `GAME_SECRET`
-   - `CLAIM_SECRET`
+2. Import the repo into Vercel.
+3. Add `GAME_SECRET` and `CLAIM_SECRET` environment variables.
 4. Deploy with the default Next.js settings.
 
-## Production notes before taking paid entries
+## Production checklist before taking paid entries
 
-This scaffold signs game state and claim codes server-side, which is much better than a purely client-side game. It is still not enough for real prize operations because a determined user can replay old signed tokens without a database-backed session ledger.
+This starter signs run state and claim codes server-side, and unrevealed stats are not sent to the browser before the player answers. Still, for real prizes, add database-backed run/session storage so old signed tokens cannot be replayed.
 
-Before launch, add:
+Add before launch:
 
-- A database table for runs, questions, answer submissions, claims, inventory, and staff redemptions.
-- One-time token usage so old answers cannot be replayed.
-- Payment verification, likely Stripe Checkout or a POS-issued entry code.
-- Staff-only claim verification screen using `/api/game/verify-claim`.
-- Inventory caps per day/event, especially for the Prismatic ETB.
-- Full contest terms, eligibility, odds/material disclosures, privacy policy, refund policy, and local legal review.
+- Database tables for runs, questions, answers, claims, inventory, and redemptions.
+- One-time use answer tokens.
+- Payment verification or POS entry-code redemption.
+- Staff admin claim verification UI using `/api/game/verify-claim`.
+- Daily/event inventory caps, especially for the Prismatic ETB.
+- Full contest rules, eligibility, privacy/refund policies, and legal/IP review.
 
-## Important legal/IP reminder
-
-Pokemon names, images, logos, and related marks belong to their respective owners. This project is a technical prototype and does not grant rights to use protected Pokémon IP in a commercial event.
+Pokemon names, images, logos, and related marks belong to their respective owners. This project is a technical prototype and does not grant rights to use protected Pokémon IP commercially.

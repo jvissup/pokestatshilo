@@ -13,19 +13,10 @@ export function getPrizeByStreak(streak: number): PrizeTier | null {
   return PRIZE_TIERS.find((tier) => tier.streak === streak) ?? null;
 }
 
-export function getProjectedMargin(extraPrizeCost: number): number {
-  return (ENTRY_FEE - GUARANTEED_PRIZE.cost - extraPrizeCost) / ENTRY_FEE;
-}
-
 export function getMaxBonusEv(): number {
   return ENTRY_FEE * (1 - TARGET_MARGIN) - GUARANTEED_PRIZE.cost;
 }
 
-export function getIncrementalCostMap(): Array<{ tier: PrizeTier; incrementalCost: number }> {
-  let previousCost = 0;
-  return PRIZE_TIERS.map((tier) => {
-    const incrementalCost = Math.max(0, tier.cost - previousCost);
-    previousCost = Math.max(previousCost, tier.cost);
-    return { tier, incrementalCost };
-  });
+export function getProjectedMargin(extraPrizeCost: number): number {
+  return (ENTRY_FEE - GUARANTEED_PRIZE.cost - extraPrizeCost) / ENTRY_FEE;
 }

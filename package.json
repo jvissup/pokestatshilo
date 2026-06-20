@@ -1,18 +1,18 @@
 {
   "name": "pokemon-prize-ladder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "A Vercel-ready Pokemon base-stat higher/lower prize ladder game.",
+  "description": "Vercel-ready Pokemon base-stat higher/lower prize ladder game.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "ev": "node scripts/ev-simulator.mjs",
-    "seed:pokemon": "node scripts/build-pokemon-dataset.mjs"
+    "seed:pokemon": "node scripts/build-pokemon-dataset.mjs --write-main",
+    "images:pokemon": "node scripts/build-pokemon-dataset.mjs --write-main --download-images"
   },
   "dependencies": {
-    "@vercel/analytics": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
@@ -26,6 +26,6 @@
     "typescript": "latest"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20"
   }
 }
