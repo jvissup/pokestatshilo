@@ -4,6 +4,9 @@ import { pickOne, rngFromParts, shuffle } from './rng';
 import type { ComparisonKind, GameQuestion, Pokemon, RoundBand, StatKey } from './types';
 
 const EXTREME_HARD_WIN_STREAKS = new Set([8, 10, 12, 14, 21]);
+const EXTREME_HARD_MIN_DELTA = 1;
+const EXTREME_HARD_MAX_DELTA = 2;
+const EXTREME_HARD_FALLBACK_MAX_DELTA = 4;
 
 export function getRoundBand(round: number): RoundBand {
   return ROUND_BANDS.find((band) => round >= band.fromRound && (band.toRound === undefined || round <= band.toRound)) ?? ROUND_BANDS.at(-1)!;
@@ -77,18 +80,18 @@ function candidatesForDeltaRange(statKey: StatKey, minDelta: number, maxDelta: n
   });
 }
 
-function isExtremeHardRound(round: number): boolean {
+function isExtremeHardMilestoneRound(round: number): boolean {
   return EXTREME_HARD_WIN_STREAKS.has(round - 1);
 }
 
 export function makeQuestion(seed: number, round: number, questionNonce = 0): GameQuestion {
   const band = getRoundBand(round);
   const rng = rngFromParts(seed, round, questionNonce, 'question');
-  const extremeHard = isExtremeHardRound(round);
+  const extremeHard = isExtremeHardMilestoneRound(round);
   const comparisonKind = extremeHard ? 'same-stat' : chooseKind(rng, band);
   const statKey = extremeHard ? pickOne(rng, STAT_KEYS) : chooseStat(rng, comparisonKind);
-  const pool = extremeHard ? candidatesForDeltaRange(statKey, 1, 2) : candidatesFor(statKey, band);
-  const fallbackPool = extremeHard ? candidatesForDeltaRange(statKey, 1, 4) : fallbackCandidates(statKey);
+  const pool = extremeHard ? candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_MAX_DELTA) : candidatesFor(statKey, band);
+  const fallbackPool = extremeHard ? candidatesForDeltaRange(statKey, EXTREME_HARD_MIN_DELTA, EXTREME_HARD_FALLBACK_MAX_DELTA) : fallbackCandidates(statKey);
   let candidatePool = pool;
   if (!candidatePool.length) candidatePool = fallbackPool;
   if (!candidatePool.length) candidatePool = fallbackCandidates(statKey);
